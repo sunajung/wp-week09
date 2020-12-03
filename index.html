@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>주소 API 실습</title>
+  <link rel="stylesheet" type="text/css" href="./css/letter.css"/>
+</head>
+<body>
+   <header>
+	   <center>
+      <img src="./images/header.png"></center>
+   </header>   
+   <!-- 왼쪽 섹션 - 편지 보내기 -->
+   <section id="left">
+      <form id="form" onSubmit="return false">
+         <table id="letter-table">
+            <tr>
+               <td><img src="./images/보내는사람.png"/></td>   <td><input type="text" name="sender" id="sender" placeholder="" size="10"></td>
+            </tr>
+            <tr>
+               <td><img src="./images/받는사람.png"/></td>   <td><input type="text" name="receiver" id="receiver" placeholder="" size="10"></td>
+            </tr>
+            <tr>
+               <td><img src="./images/주소.png"/ ></td>      
+               <td>
+                  <input type="text" name="receiverAddress" id="receiver-address" placeholder="" size="35">
+                  <button type="button" id="search-receiver-address-popup"><img id="search-icon" src="./images/검색.png"/></button>
+               </td>
+            </tr>
+            <tr>
+               <td><img src="./images/상세주소.png"/></td>   <td><input type="text" name="receiverAddressDetail" id="receiver-address-detail" placeholder="" size="27"></td>
+            </tr>
+            <tr>
+               <td colspan="2" id="td-content"><img src="./images/내용.png"/></td>
+            </tr>
+            <tr id="content-area">
+               <td colspan="2"><textarea name="content" id="content" placeholder="" cols="50" rows="7" style="resize:none"></textarea></td>
+            </tr>
+         </table>
+            <button type="submit" id="send-button"><img src="./images/전송.png"/></button>
+      </form>   
+   </section>   
+   <!-- 왼쪽 섹션 - 편지 보내기 끝-->
+   
+   <!-- 오른쪽 섹션 - 배송료 및 광고 -->
+   <section id="right">
+      <div id="weather">
+         <h3>*배송비 안내</h3>
+         <h4>-배송비는 날씨에 따라 달라집니다.</h4>
+         <table id="price-table">
+            <tr>
+               <td><img src="http://openweathermap.org/img/wn/01d.png"></img>맑음</td>   
+               <td>100만원</td>
+            </tr>
+            <tr>
+               <td><img src="http://openweathermap.org/img/wn/02d.png"></img>구름</td>   
+               <td>100만원</td>
+            </tr>
+            <tr>
+               <td><img src="http://openweathermap.org/img/wn/50d.png"></img>안개</td>   
+               <td>150만원</td>
+            </tr>
+            <tr>
+               <td><img src="http://openweathermap.org/img/wn/09d.png"></img>이슬비</td>   
+               <td>150만원</td>
+            </tr>
+            <tr>
+               <td><img src="http://openweathermap.org/img/wn/10d.png"></img>비</td>   
+               <td>300만원</td>
+            </tr>
+            <tr>
+               <td><img src="http://openweathermap.org/img/wn/13d.png"></img>눈</td>   
+               <td>400만원</td>
+            </tr>
+            <tr>
+               <td><img src="http://openweathermap.org/img/wn/11d.png"></img>천둥번개</td>   
+               <td>500만원</td>
+            </tr>
+         </table>
+      </form>   
+      
+      <!-- 날씨 아이콘. 스크립트로 가져옴 -->
+      <img id="weather-icon" src=""/>
+      
+      <!-- 현재 날씨. 스크립트로 가져옴 -->
+      <div id="weather-name"></div>
+      
+      <!-- 현재 날씨 배송비. 스크립트로 가져옴 -->
+      <div id="letter-price"></div>
+      
+      <!-- 광고 -->
+      <div id="advertise"></div>
+   </section>   
+   <!-- 오른쪽 섹션 - 배송료 및 광고 끝-->
+   
+   <footer>
+      <br>
+   </footer>
+  <script>
+   /* 검색버튼 눌렀을 때 팝업 띄우기 */
+    const receiverAddressSearchButton = document.querySelector('#search-receiver-address-popup'); //검색 버튼
+    const receiverAddressText = document.querySelector('#receiver-address');   //주소 입력창. 주소입력창 클릭해도 팝업 뜨게 하기 위함.
+   function receiverPopupFunction(){      //주소창 입력 팝업 띄우는 함수
+      let windowPop = window.open("./addressSearchPopup.html", "도로명 주소 찾기", "width=650,height=600,top=300");    //순서대로 팝업으로 띄울 url, 팝업 이름(아무거나 상관 없음), 팝업 옵션(크기, 위치 등)
+    }                                                                                    //더블모니터의 경우 left가 잘 안먹을 수 있음.
+    receiverAddressSearchButton.addEventListener('click', receiverPopupFunction);   //검색버튼에 클릭 시 발동하는 콜백(팝업 함수) 등록
+    receiverAddressText.addEventListener('click', receiverPopupFunction);      //주소 입력창에도 클릭 시 발동하는 콜백 등록
+   
+   /* 팝업에서 주소 입력 받기 */
+    const form = document.querySelector('#form');   //폼 가져옴
+   window.addEventListener('message', function(e) {   //주소 입력 팝업에서 정보가 들어왔을 경우
+      if(e.data['child']=='addressPopup'){      //주소 입력 팝업인지 확인.
+         form.receiverAddress.value = e.data['content'];         //맞으면 받은 정보를 주소입력창에 대입
+      }
+   });
+   
+   /* 보내기 버튼 눌렀을 경우 */
+    form.addEventListener('submit',function(e){      
+      e.preventDefault();
+      
+      /* 아직 칸 채우지 않았을 때 경고 띄우기 */
+      var checkFormReturnValue = checkForm();      //checkForm은 빈 곳이 없으면 0을, 빈 자리가 있으면 해당 자리를 return 함.
+      if(checkFormReturnValue != 0){   //빈곳이 있다면
+         var content;
+         switch(checkFormReturnValue){   //그에 맞는 자리 이름 설정
+            case 1:content='보내는 사람을';break;
+            case 2:content='받는 사람을';break;
+            case 3:content='받는 사람의 주소를';break;
+            case 4:content='받는 사람의 상세주소를';break;
+            case 5:content='편지 내용을';break;
+         }
+         alert(content+" 을 입력해주세요.");   //경고메시지
+         return false;   //빈칸이 있으므로 이후 행동 하지 않음
+      }
+      
+      
+      /* 편지 보냈다는 alert 띄우기 */
+      var today=new Date();
+      today.setDate(today.getDate()+2);   //편지는 이틀 후에 도착하므로 2일 이후를 setting. date에 2를 더해주면 알아서 달, 년까지 계산해줌. 
+      alert(this.sender.value+"님이 "+this.receiver.value+"님에게 편지를 전송하셨습니다.\n"+   
+         (today.getYear()+1900)+"년 "+(today.getMonth()+1)+"월 "+today.getDate()+"일에 도착 예정입니다.\n"+
+         "이용료 "+getPrice()+"원이 자동 결제됩니다.");
+
+	this.reset();
+   });
+   
+   /* 빈칸 확인하기 */
+   function checkForm(){
+      if(form.sender.value.trim()=="")return 1;   //공백만 써있는 경우도 배제하기 위해 문자열에서 공백을 지우는 trim() 이용.
+      if(form.receiver.value.trim()=="")return 2;   //trim이 없으면 띄어쓰기만 있는 입력도 빈칸이 아니라고 생각하고 출력하게 됨
+      if(form.receiverAddress.value.trim()=="")return 3;   //trim으로 공백 없애주면 정상적으로 필터링 가능
+      if(form.receiverAddressDetail.value.trim()=="")return 4;
+      if(form.content.value.trim()=="")return 5;
+      
+      return 0;
+   }
+   
+   /* 날씨 별 가격 미리 설정 */
+   var prices = {
+      'Clear':1000000,
+      'Clouds':1000000,
+      'Drizzle':1500000,
+      'Atmosphere':1500000,
+      'Rain':3000000,
+      'Snow':4000000,
+      'Thunderstorm':5000000,
+   }
+   
+   /* 날씨 별 한글 이름 미리 설정 */
+   var weatherNames = {
+      'Clear':'맑음',
+      'Clouds':'구름',
+      'Drizzle':'안개',
+      'Atmosphere':'이슬비',
+      'Rain':'비',
+      'Snow':'눈',
+      'Thunderstorm':'천둥번개',
+   }
+   
+   var nowWeather;
+   /* 가격에 쉼표 알아서 찍어주기. ex) 3000000 -> 3,000,000 */
+   function getPrice(){      
+      var price = prices[nowWeather];      
+      return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); //정규식 이용. 구글링해서 찾음.
+   }
+   
+   /* 
+      오늘 날씨 받아오기 
+      https://home.openweathermap.org/ 에서 받아옴.
+      내일 날씨는 유료.
+      회원가입 시 무료 key 하나 자동 생성.
+   */
+   const kyoungkidoCode = "1841610"; // 경기도 지역 코드. https://openweathermap.org/current에 현재날씨 api 사용법과 각종 code들 있음.
+   const weatherAPIKey = "c774d1d9c55691ba0ceca37bbf9b87b1";   //회원가입하여 기본적으로 제공된 api key
+   var API_URL = "http://api.openweathermap.org/data/2.5/weather?id="+kyoungkidoCode+"&appid="+weatherAPIKey;
+   
+   /* fetch 이용하여 API 호출 */
+   fetch(API_URL)
+   .then(async function(result){      //결과 받아왔으면
+      var txt = await result.text();
+      var res=JSON.parse(txt.replace(/^\(/, '').replace(/\)$/, ''));   //문자열을 json으로 바꿔줌. 주소 받아오는 예제 응용.
+      
+      nowWeather = res.weather[0].main;    //현재 날씨 받아오기      
+      var letterPrice = document.querySelector('#letter-price');   //현재 날씨에 따른 가격 설정
+      letterPrice.innerHTML = '현재 배송비는 '+getPrice()+'원 입니다.';
+      var weatherIcon = document.querySelector('#weather-icon');   //현재 날씨에 따른 아이콘 설정. API와 함께 아이콘 url도 제공됨. https://openweathermap.org/weather-conditions
+      weatherIcon.src = "http://openweathermap.org/img/wn/" + res.weather[0].icon + ".png";
+      var weatherName = document.querySelector('#weather-name');   //현재 날씨를 한글로 바꿔 설정
+      weatherName.innerHTML = "현재 날씨 : " + weatherNames[nowWeather]+"("+(res.main.temp-273).toFixed(1)+"˚C)";
+   });
+   
+  </script>
+</body>
+</html>

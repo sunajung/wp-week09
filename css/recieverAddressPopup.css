@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+
+body{
+    font-family: 'Poor Story', cursive;
+}
+
+p{	/* 위쪽 안내문들 */
+	text-align:center;
+}
+
+div#pagenation{		/* 페이지 들어가는곳 */
+	width:370px;
+	margin:auto;
+}
+
+div#pagenation-cover{	/* 중앙정렬 위해서 각 페이지 요소 한번 감쌈 */
+	width:100%;
+	margin:auto;
+}
+
+div#pagenation-cover div{	/* 각 페이지 요소들 */
+	display:inline-block;
+	width:30px;
+	height:30px;
+	margin:auto;
+	text-align:center;
+}
+
+ul#address-list{	/* 주소 검색 결과 목록 */
+	height:300px;
+}
+
+ul#address-list li{	/* 검색 결과 각 항목 */
+	margin:auto;
+	height:30px;
+	cursor:pointer;
+}
+
+ul#address-list li:hover{	/* 검색 결과 각 항목 */
+	color: #ffc045;
+}
+
+div#form-cover{ /* 중앙 정렬 위해 폼 감쌈 */
+	width:380px;
+	margin:auto;
+}
+
+div#selected-page{	/* 선택된 페이지 */
+	color:red;
+}
